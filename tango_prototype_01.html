@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TangoAI OCR 체험 개선 시안</title>
+<style>
+:root{
+  --blue:#2563eb;
+  --blue-dark:#1d4ed8;
+  --ink:#f1f5f9;
+  --muted:#94a3b8;
+  --line:#334155;
+  --bg:#0f172a;
+  --panel:#1e293b;
+  --soft:#1e3a5f;
+  --green:#4ade80;
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);font-size:14px}
+button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}
+.topbar{height:64px;background:#0f172a;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,48px);gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;letter-spacing:-.7px}.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);display:grid;place-items:center;color:white;font-weight:900;font-size:18px}.brand span:last-child{color:#60a5fa}.brand em{font-style:normal;color:#f1f5f9}
+.topright{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px}
+.btn{border:1px solid var(--line);background:#fff;color:#334155;border-radius:9px;padding:10px 14px;font-weight:650;transition:.15s}
+.btn:hover{border-color:#93b4fa;background:#f8fbff}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.primary:hover{background:var(--blue-dark)}
+.btn.ghost{background:transparent}
+
+/* 현대어 탭 클릭 시 눌리는 시각 효과 */
+.tab[data-tab="modern"]:active{
+  transform:scale(0.97);
+  opacity:0.8;
+}
+main{max-width:1440px;margin:0 auto;padding:28px clamp(16px,3vw,40px) 44px}
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.intro > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--blue);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.intro h1 {
+  font-size: clamp(25px, 3vw, 34px);
+  letter-spacing: -1.2px;
+  margin: 0 0 9px;
+}
+
+.intro p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: none;
+}
+
+.intro .tip {
+  font-size: 12px;
+  color:#cbd5e1;
+  background:#1e293b;
+  border:1px solid #334155;
+  border-radius: 12px;
+  padding: 12px 14px;
+  max-width: 265px;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.step{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:13px;background:var(--panel)}.stepnum{height:32px;width:32px;border-radius:10px;display:grid;place-items:center;background:#eff6ff;color:var(--blue);font-weight:800;flex-shrink:0}.step strong{display:block;font-size:13px;margin-bottom:3px}.step small{color:var(--muted);font-size:12px}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 3px 14px rgba(15,23,42,.035);min-width:0}.cardhead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}.cardtitle{display:flex;align-items:center;gap:10px}.number{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#eff6ff;color:var(--blue);font-weight:800}.cardtitle h2{font-size:15px;margin:0}.cardtitle p{margin:4px 0 0;color:var(--muted);font-size:12px}.tag{border-radius:99px;background:#f1f5f9;padding:5px 9px;color:#475569;font-size:11px;font-weight:700}
+.uploadbar{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #eef2f7}.fileinfo{min-width:0}.fileinfo strong{display:block;font-size:13px;overflow-wrap:anywhere}.fileinfo small{color:var(--muted);display:block;margin-top:4px;font-size:11px}.uploadarea{margin:18px;border:1.5px dashed #b8c9e6;border-radius:14px;min-height:290px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:linear-gradient(180deg,#fbfdff,#f7faff);transition:.15s}.uploadarea.drag{background:#eaf2ff;border-color:var(--blue)}.uploadicon{width:58px;height:58px;border-radius:18px;background:#e8f0ff;color:var(--blue);display:grid;place-items:center;margin-bottom:15px}.uploadarea h3{font-size:16px;margin:0 0 7px}.uploadarea p{color:var(--muted);font-size:12px;line-height:1.7;margin:0 0 16px}.supported{font-size:11px;color:#94a3b8;margin-top:12px}.doc-preview{display:none;margin:18px;border:1px solid var(--line);border-radius:12px;background:#f8fafc;min-height:290px;padding:18px;align-items:center;justify-content:center}.paper{background:#fff;border:1px solid #d8d1c3;box-shadow:0 4px 18px #0f172a12;width:min(82%,320px);min-height:260px;padding:28px 24px;color:#6b6254;font-family:serif;line-height:1.95;transform:rotate(-.5deg)}.paper h4{text-align:center;margin:0 0 16px;font-size:15px}.paper p{font-size:12px;margin:0 0 10px}.paper .faint{opacity:.65}
+/* 다크 테마 적용 */
+.uploadbar {
+  border-bottom-color: #334155;
+}
+
+.uploadarea {
+  background: linear-gradient(180deg, #1e293b, #172554);
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+.uploadarea.drag {
+  background: #1e3a5f;
+  border-color: var(--blue);
+}
+
+.uploadicon {
+  background: #1e3a5f;
+  color: #60a5fa;
+}
+
+.doc-preview {
+  background: #172033;
+  border-color: #334155;
+}
+.actionrow{padding:0 18px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}.actionrow small{color:var(--muted);font-size:11px;line-height:1.5}
+.resulttabs{
+  display:flex;
+  gap:5px;
+  background:#0f172a;
+  border:1px solid #334155;
+  border-radius:9px;
+  padding:4px;
+}
+
+.tab{
+  border:0;
+  background:transparent;
+  padding:7px 10px;
+  border-radius:7px;
+  color:#94a3b8;
+  font-size:12px;
+  font-weight:700;
+  transition:transform .15s, opacity .15s;
+}
+
+.tab:active{
+  transform:scale(0.97);
+  opacity:0.8;
+}
+
+.tab.active{
+  background:#2563eb;
+  color:#ffffff;
+  box-shadow:0 1px 3px #00000030;
+}
+
+.resultbody{
+  padding:18px;
+}
+
+.emptyresult{
+  min-height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:var(--muted);
+  padding:28px;
+}
+
+.emptyresult .bigicon{
+  font-size:30px;
+  margin-bottom:12px;
+}
+
+.emptyresult strong{
+  display:block;
+  color:#334155;
+  margin-bottom:7px;
+}
+
+.emptyresult p{
+  font-size:12px;
+  line-height:1.7;
+  max-width:280px;
+  margin:0 auto;
+}
+
+.resultcontent{
+  display:none;
+}
+
+.resulttop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+  gap:12px;
+}
+
+.success{
+  font-size:12px;
+  color:var(--green);
+  font-weight:750;
+}
+
+.resulttext{
+  width:100%;
+  min-height:230px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:14px;
+  line-height:1.95;
+  resize:vertical;
+  color:#334155;
+  background:#fff;
+}
+
+.resultnote{
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.6;
+  margin:10px 0 0;
+}
+
+.translation{
+  display:none;
+  white-space:pre-wrap;
+  line-height:1.9;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:14px;
+  min-height:230px;
+  color:#334155;
+}
+.bottomnote{margin-top:16px;display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-radius:12px;background:#eef5ff;color:#365276;font-size:12px;line-height:1.7}.bottomnote b{color:#1d4ed8;white-space:nowrap}
+footer{margin-top:28px;text-align:center;color:#94a3b8;font-size:11px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#172033;color:#fff;padding:12px 18px;border-radius:10px;box-shadow:0 8px 30px #0f172a2e;font-size:13px;display:none;z-index:10}
+@media(max-width:900px){.workspace{grid-template-columns:1fr}.intro{align-items:flex-start;flex-direction:column}.intro .tip{max-width:none}.steps{grid-template-columns:1fr}.topright .guest{display:none}}
+@media(max-width:520px){.topbar{padding:0 14px}.topright{gap:6px}.topright .btn{padding:8px 10px}main{padding:20px 12px 32px}.uploadbar{align-items:flex-start;flex-direction:column}.actionrow{align-items:flex-start;flex-direction:column}.resulttabs{width:100%}.tab{flex:1}}
+.topright {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.guest-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.guest {
+  font-size: 12px;
+}
+
+.retention {
+  font-size: 11px;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">T</div>
+    <div><span>Tango</span><em>AI</em></div>
+  </div>
+
+  <div class="topright">
+    <div class="guest-info">
+      <span class="guest">게스트 체험 · 개인정보가 포함된 문서는 업로드하지 마세요.</span>
+      <span class="retention">데이터는 7일간 보관됩니다</span>
+    </div>
+    <button class="btn" id="loginBtn">로그인</button>
+  </div>
+</header>
+<main>
+  <section class="intro">
+    <div><div class="eyebrow">TANGO AI · OCR EXPERIENCE</div><h1>문서 속 원문을, AI로 더 간편하게</h1><p>이미지를 업로드해 문자 인식 결과를 확인해 보세요. 인식된 원문은 현대어 번역 체험으로 이어갈 수 있습니다.</p></div>
+    <div class="tip">💡 <b>처음 이용하시나요?</b><br>① 이미지 선택 → ② OCR 실행 → ③ 원문 확인 및 번역 순서로 진행하세요.</div>
+  </section>
+  <section class="steps" aria-label="이용 순서">
+    <div class="step"><div class="stepnum">1</div><div><strong>문서 이미지 업로드</strong><small>지원 파일 형식을 확인하세요.</small></div></div>
+    <div class="step"><div class="stepnum">2</div><div><strong>AI OCR 실행</strong><small>이미지의 문자를 원문으로 변환합니다.</small></div></div>
+    <div class="step"><div class="stepnum">3</div><div><strong>결과 확인 및 번역</strong><small>원문을 확인하고 번역을 체험합니다.</small></div></div>
+  </section>
+  <section class="workspace">
+    <article class="card">
+      <div class="cardhead"><div class="cardtitle"><span class="number">1</span><div><h2>문서 이미지</h2><p>인식할 문서를 선택해 주세요.</p></div></div><span class="tag">필수</span></div>
+      <div class="uploadbar"><div class="fileinfo"><strong id="fileName">선택된 파일 없음</strong><small id="fileMeta">JPG · PNG · TIFF · BMP</small></div><button class="btn" id="chooseBtn">파일 선택</button><input id="fileInput" type="file" accept="image/jpeg,image/png,image/tiff,image/bmp" hidden></div>
+      <div class="uploadarea" id="dropArea"><div class="uploadicon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg></div><h3>문서 이미지를 업로드하세요</h3><p>파일을 선택하거나 이 영역에 끌어다 놓을 수 있습니다.<br>샘플 체험은 개인정보가 없는 문서를 권장합니다.</p><button class="btn primary" id="chooseBtn2">내 컴퓨터에서 파일 선택</button><div class="supported">지원 형식: JPG, PNG, TIFF, BMP</div></div>
+      <div class="doc-preview" id="docPreview"><div class="paper"><h4>示範文書 · 문서 미리보기</h4><p>옛 문헌의 본문을 인식하여 원문 텍스트로 변환합니다.</p><p>文字認識 결과를 확인하고 필요한 경우 현대어 번역을 진행할 수 있습니다.</p><p class="faint">※ 실제 파일 미리보기 대신 표시되는 시안용 예시 문서입니다.</p></div></div>
+      <div class="actionrow"><small>이 시안은 화면 흐름 확인용입니다.<br>실제 OCR 서버와 연결되어 있지 않습니다.</small><button class="btn primary" id="ocrBtn" disabled>OCR 실행 →</button></div>
+    </article>
+    <article class="card">
+      <div class="cardhead"><div class="cardtitle"><span class="number">3</span><div><h2>인식 결과</h2><p>원문을 확인한 뒤 번역 결과를 살펴보세요.</p></div></div><div class="resulttabs"><button class="tab active" data-tab="original">원문</button><button class="tab" data-tab="modern">현대어</button></div></div>
+      <div class="resultbody">
+        <div class="emptyresult" id="emptyResult"><div><div class="bigicon">▤</div><strong>아직 인식 결과가 없습니다.</strong><p>왼쪽에서 문서를 선택한 다음 <b>OCR 실행</b> 버튼을 누르면 결과 예시가 표시됩니다.</p></div></div>
+        <div class="resultcontent" id="resultContent"><div class="resulttop"><span class="success" id="resultStatus">✓ 시안용 예시 결과</span><button class="btn" id="copyBtn">원문 복사</button></div><textarea class="resulttext" id="originalText" aria-label="원문 예시" spellcheck="false"></textarea><div class="translation" id="translationText"></div><p class="resultnote" id="resultNote">현재 표시되는 문구는 UI 시연을 위한 샘플 데이터이며 실제 OCR 결과가 아닙니다.</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn" id="translateBtn">현대어 번역 보기</button><button class="btn" id="downloadBtn">텍스트 다운로드</button></div></div>
+      </div>
+    </article>
+  </section>
+  <div class="bottomnote"><b>개인정보 보호 안내</b><span>주민등록번호, 연락처, 계정정보 등 민감한 개인정보가 포함된 문서는 체험용 페이지에 업로드하지 마세요. 실제 운영 전 파일 보관·삭제 정책, 업로드 용량 제한 및 개인정보 처리 안내를 확인해야 합니다.</span></div>
+  <footer>개선 방향 검토용 프로토타입 · TangoAI 공식 서비스가 아닌 별도 UI 시안</footer>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $=id=>document.getElementById(id);
+const fileInput=$('fileInput'), dropArea=$('dropArea');
+let selectedFile=null, activeTab='original', demoReady=false;
+function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',2800)}
+function selectFile(file){
+ if(!file)return;
+ const allowed=['image/jpeg','image/png','image/tiff','image/bmp'];
+ if(!allowed.includes(file.type)){toast('JPG, PNG, TIFF, BMP 형식의 이미지 파일을 선택해 주세요.');return}
+ selectedFile=file;$('fileName').textContent=file.name;$('fileMeta').textContent=`${(file.size/1024/1024).toFixed(2)} MB · 업로드 완료(시안)`;$('ocrBtn').disabled=false;
+ dropArea.style.display='none';$('docPreview').style.display='flex';toast('파일이 선택되었습니다. OCR 실행을 눌러보세요.');
+}
+$('chooseBtn').onclick=()=>fileInput.click();$('chooseBtn2').onclick=()=>fileInput.click();fileInput.onchange=e=>selectFile(e.target.files[0]);
+['dragenter','dragover'].forEach(ev=>dropArea.addEventListener(ev,e=>{e.preventDefault();dropArea.classList.add('drag')}));
+['dragleave','drop'].forEach(ev=>dropArea.addEventListener(ev,e=>{e.preventDefault();dropArea.classList.remove('drag')}));
+dropArea.addEventListener('drop',e=>selectFile(e.dataTransfer.files[0]));
+$('ocrBtn').onclick=()=>{
+ if(!selectedFile)return;
+ loadDemoResult();
+ setTab('original');
+ toast('시안용 예시 결과를 표시했습니다. 실제 OCR 처리는 수행하지 않았습니다.');
+};
+function loadDemoResult(){
+ if(demoReady)return;
+ demoReady=true;
+ $('emptyResult').style.display='none';
+ $('resultContent').style.display='block';
+ $('originalText').value='示範文書\\n\\n이곳에 OCR로 인식된 원문이 표시됩니다.\\n고문헌의 한자와 옛한글 등은 문서 상태에 따라 인식 결과가 달라질 수 있습니다.\\n\\n※ 실제 엔진과 연결되지 않은 시안용 예시 텍스트입니다.';
+ $('translationText').textContent='이곳에 원문을 바탕으로 한 현대어 번역 예시가 표시됩니다.\\n\\n※ 실제 번역 결과가 아닌 화면 시연용 문구입니다.';
+ $('resultStatus').textContent='✓ 시안용 예시 결과';
+ $('resultNote').textContent='시안 데이터입니다. 실제 OCR 정확도나 처리 성능을 나타내지 않습니다.';
+}
+function setTab(tab){
+ activeTab=tab;
+ document.querySelectorAll('.tab').forEach(b => {
+    const selected = b.dataset.tab === tab;
+    b.classList.toggle('active', selected);
+    b.setAttribute('aria-pressed', String(selected));
+  });
+  $('originalText').style.display =
+    tab === 'original' ? 'block' : 'none';
+
+  $('translationText').style.display =
+    tab === 'modern' ? 'block' : 'none';
+
+  $('copyBtn').style.display =
+    tab === 'original' ? 'inline-block' : 'none';
+
+  $('translateBtn').textContent =
+    tab === 'modern' ? '현대어 번역 표시 중' : '현대어 번역 보기';
+
+  $('resultStatus').textContent =
+    tab === 'modern' ? '✓ 현대어 번역 예시' : '✓ 시안용 원문 결과';
+}
+document.querySelectorAll('.tab').forEach(b => {
+  b.onclick = () => {
+    if (!selectedFile) {
+      toast('먼저 문서를 업로드해 주세요.');
+      return;
+    }
+
+    if (!demoReady) {
+      toast('OCR 실행 버튼을 눌러 결과를 확인해 주세요.');
+      return;
+    }
+
+    setTab(b.dataset.tab);
+  };
+});
+$('translateBtn').onclick = () => {
+  // 파일이 없으면 알림만 표시
+  if (!selectedFile) {
+    toast('먼저 문서를 업로드해 주세요.');
+    return;
+  }
+
+  // 파일은 있지만 OCR을 실행하지 않았다면 안내
+  if (!demoReady) {
+    toast('OCR 실행 버튼을 눌러 결과를 확인해 주세요.');
+    return;
+  }
+
+  // 조건이 충족되면 기존 버튼 기능 실행
+  setTab('modern');
+};
+
+$('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText($('originalText').value);toast('원문 예시를 복사했습니다.')}catch(e){$('originalText').select();document.execCommand('copy');toast('원문 예시를 복사했습니다.')}};
+$('downloadBtn').onclick=()=>{if(!demoReady)return;const text=activeTab==='modern'?$('translationText').textContent:$('originalText').value;const blob=new Blob([text],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tangoai_ocr_시안_예시.txt';a.click();URL.revokeObjectURL(a.href);toast('예시 텍스트 다운로드를 시작했습니다.')};
+$('loginBtn').onclick=()=>toast('로그인 기능은 시안에 연결되어 있지 않습니다.');
+</script>
+</body>
+</html>
